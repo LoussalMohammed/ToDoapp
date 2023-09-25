@@ -4,31 +4,69 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-int MAX_ENTRIES = 3000;
+const int MAX_ENTRIES = 3000;
 struct dateLimite{
         int jour;
         int mois;
         int annee;
     };
-struct Entry {
-    char id[300];
-    char titre[50];
-    char description[100];
-    char status[20];
-    struct dateLimite datel;
 
+struct Entry {
+    char id[50];
+    char titre[50];
+    char description[50];
+    char status[50];
+    struct dateLimite datel;
+    
 };
-void ajouterNouvelleTache(struct Entry *entries, int *numLines, char *titre, char *description, int annee, int jour, int mois, char *status) {
+
+char id[50];
+    char titre[50];
+    char description[50];
+    char status[50];
+    int jour;
+    int mois;
+    int annee;
+
+void ajouterNouvelleTache(struct Entry *entries, int *numLines) {
     if (*numLines >= MAX_ENTRIES) {
         printf("Nombre maximal d'entrees atteint.\n");
         return;
     }
 
-    char id[10];
+    printf("Entrez le titre de la nouvelle tache : ");
+    getchar();
+    fgets(titre, sizeof(titre), stdin);
+    titre[strcspn(titre, "\n")] = '\0';
+
+    printf("Entrez la description de la nouvelle tache : ");
+    getchar();
+    fgets(description, sizeof(description), stdin);
+    description[strcspn(description, "\n")] = '\0';
+
+    printf("Entrez l'annee de la deadline de la tache : ");
+    scanf("%d", &annee);
+
+    printf("Entrez le jour de la deadline de la tache : ");
+    scanf("%d", &jour);
+
+    printf("Entrez le mois de la deadline de la tache : ");
+    scanf("%d", &mois);
+
+    askStatus:
+    printf("Entrez le statut de la tache (a realiser, en cours de realisation, finalisee ) : ");
+    getchar(); 
+    fgets(status, sizeof(status), stdin);
+    status[strcspn(status, "\n")] = '\0';
+    if(strcmp(status, "a realiser") != 0 && strcmp(status, "en cours de realisation") != 0 && strcmp(status, "finalisee") != 0 ){
+            goto askStatus;
+    }
+
+    char id[50];
     snprintf(id, sizeof(id), "%d", *numLines); 
     strcpy(entries[*numLines].id, id);
 
-
+    
     strcpy(entries[*numLines].titre, titre);
     strcpy(entries[*numLines].description, description);
     entries[*numLines].datel.annee = annee;
@@ -36,24 +74,49 @@ void ajouterNouvelleTache(struct Entry *entries, int *numLines, char *titre, cha
     entries[*numLines].datel.mois = mois;
     strcpy(entries[*numLines].status, status);
 
-    (*numLines)++;
+    (*numLines)++; 
 
-
-    printf("Nouvelle tache ajoutee avec succès. ID de la tache : %s\n", id);
+    
+    printf("Nouvelle tache ajoutee avec succes. ID de la tache : %s\n", id);
 }
 
-void ajouterMultipleTache(int repet, struct Entry *entries, int *numLines, char *titre, char *description, int annee, int jour, int mois, char *status) {
+void ajouterMultipleTache(int repet, struct Entry *entries, int *numLines) {
     if (*numLines + repet >= MAX_ENTRIES) {
         printf("Nombre maximal d'entrees atteint.\n");
         return;
     }
 
     for (int i = 0; i < repet; i++) {
+        printf("Entrez le titre de la nouvelle tache : ");
+        getchar();  
+        fgets(titre, sizeof(titre), stdin);
+        titre[strcspn(titre, "\n")] = '\0';
 
-        char id[10];
-        snprintf(id, sizeof(id), "%d", *numLines); 
+        printf("Entrez la description de la nouvelle tache : ");
+        fgets(description, sizeof(description), stdin);
+        description[strcspn(description, "\n")] = '\0';
+
+        printf("Entrez l'annee de la deadline de la tache : ");
+        scanf("%d", &annee);
+
+        printf("Entrez le jour de la deadline de la tache : ");
+        scanf("%d", &jour);
+
+        printf("Entrez le mois de la deadline de la tache : ");
+        scanf("%d", &mois);
+
+        askStatus:
+        printf("Entrez le statut de la tache (a realiser, en cours de realisation, finalisee) : ");
+        getchar();  
+        fgets(status, sizeof(status), stdin);
+        status[strcspn(status, "\n")] = '\0';
+        if(strcmp(status, "a realiser") != 0 && strcmp(status, "en cours de realisation") != 0 && strcmp(status, "finalisee") != 0){
+            goto askStatus;
+        }
+
+        char id[50];
+        snprintf(id, sizeof(id), "%d", *numLines);
         strcpy(entries[*numLines].id, id);
-
 
         strcpy(entries[*numLines].titre, titre);
         strcpy(entries[*numLines].description, description);
@@ -63,17 +126,19 @@ void ajouterMultipleTache(int repet, struct Entry *entries, int *numLines, char 
         strcpy(entries[*numLines].status, status);
 
         (*numLines)++;
+
+        printf("Nouvelle tache ajoutee avec succes. ID de la tache : %s\n", id);
     }
 
-
-    printf("%d nouvelles taches ajoutees avec succès.\n", repet);
+    printf("%d nouvelles taches ajoutees avec succes.\n", repet);
 }
+
 void afficherTaches(struct Entry *entries, int numLines) {
-    if (numLines == 0) {
+    if (numLines <= 0) {
         printf("Aucune tache a afficher.\n");
         return;
     }
-
+    else {
     printf("Liste des taches :\n");
     for (int i = 0; i < numLines; i++) {
         printf("ID : %s\n", entries[i].id);
@@ -82,6 +147,7 @@ void afficherTaches(struct Entry *entries, int numLines) {
         printf("Date limite : %d-%d-%d\n", entries[i].datel.annee, entries[i].datel.jour, entries[i].datel.mois);
         printf("Statut : %s\n", entries[i].status);
         printf("-------------------------\n");
+    }
     }
 }
 
@@ -92,10 +158,8 @@ void afficheTachesTrieesParTitre(struct Entry *entries, int numLines) {
         return;
     }
 
-    // Algorithme de tri a bulles pour trier les taches par titre
     for (int i = 0; i < numLines - 1; i++) {
         for (int j = 0; j < numLines - i - 1; j++) {
-            // Comparez les titres des taches et echangez-les si necessaire
             if (strcmp(entries[j].titre, entries[j + 1].titre) > 0) {
                 struct Entry temp = entries[j];
                 entries[j] = entries[j + 1];
@@ -104,7 +168,6 @@ void afficheTachesTrieesParTitre(struct Entry *entries, int numLines) {
         }
     }
 
-    // Affichez la liste triee des taches
     printf("Taches triees par titre :\n");
     for (int i = 0; i < numLines; i++) {
         printf("ID : %s\n", entries[i].id);
@@ -116,17 +179,14 @@ void afficheTachesTrieesParTitre(struct Entry *entries, int numLines) {
     }
 }
 
-// Fonction pour trier les taches par date limite en utilisant le tri a bulles
 void afficheTachesTrieesParDeadline(struct Entry *entries, int numLines) {
     if (numLines == 0) {
         printf("Aucune tache a afficher.\n");
         return;
     }
 
-    // Algorithme de tri a bulles pour trier les taches par date limite
     for (int i = 0; i < numLines - 1; i++) {
         for (int j = 0; j < numLines - i - 1; j++) {
-            // Comparez les dates limites des taches et echangez-les si necessaire
             if (entries[j].datel.annee > entries[j + 1].datel.annee ||
                 (entries[j].datel.annee == entries[j + 1].datel.annee &&
                  (entries[j].datel.jour > entries[j + 1].datel.jour ||
@@ -139,7 +199,6 @@ void afficheTachesTrieesParDeadline(struct Entry *entries, int numLines) {
         }
     }
 
-    // Affichez la liste triee des taches
     printf("Taches triees par date limite :\n");
     for (int i = 0; i < numLines; i++) {
         printf("ID : %s\n", entries[i].id);
@@ -166,65 +225,89 @@ void afficherTachesProches(struct Entry *entries, int numLines) {
     printf("Taches avec un deadline dans 3 jours ou mois :\n");
 
     for (int i = 0; i < numLines; i++) {
-        struct dateLimite taskDeadline = entries[i].datel;
+        struct dateLimite tacheDeadline = entries[i].datel;
 
-        // Calculate the difference in days between the task deadline and the current date
         int daysDifference = 0;
 
-        // Convert the task deadline to a timestamp
-        struct tm taskDeadlineDate;
-        taskDeadlineDate.tm_year = taskDeadline.annee - 1900;
-        taskDeadlineDate.tm_mon = taskDeadline.mois - 1; // Adjust for 0-based months
-        taskDeadlineDate.tm_mday = taskDeadline.jour;
+        struct tm tacheDeadlineDate;
+        tacheDeadlineDate.tm_year = tacheDeadline.annee - 1900;
+        tacheDeadlineDate.tm_mon = tacheDeadline.mois - 1;
+        tacheDeadlineDate.tm_mday = tacheDeadline.jour;
 
-        time_t taskDeadlineTimestamp = mktime(&taskDeadlineDate);
+        time_t tacheDeadlineTimestamp = mktime(&tacheDeadlineDate);
 
-        if (taskDeadlineTimestamp != -1) {
-            // Calculate the difference in seconds
-            time_t timeDifference = taskDeadlineTimestamp - current_time;
+        if (tacheDeadlineTimestamp != -1) {
+            time_t timeDifference = tacheDeadlineTimestamp - current_time;
 
-            // Convert the difference to days
             daysDifference = (int)(timeDifference / (60 * 60 * 24));
         }
 
         if (daysDifference <= 3) {
             printf("Titre: %s\n", entries[i].titre);
             printf("Description: %s\n", entries[i].description);
-            printf("Date limite: %d/%d/%d\n", taskDeadline.jour, taskDeadline.mois, taskDeadline.annee);
+            printf("Date limite: %d/%d/%d\n", tacheDeadline.jour, tacheDeadline.mois, tacheDeadline.annee);
             printf("Statut: %s\n", entries[i].status);
             printf("\n");
         }
     }
 }
 
-void modifierDescription(struct Entry *entries, int numLines, int taskID, char *newDescription) {
-    if (taskID >= 0 && taskID < numLines) {
-        // Check if the task with the specified ID exists
-        strcpy(entries[taskID].description, newDescription);
-        printf("Description de la tache %d modifiee avec succes !\n", taskID);
-    } else {
-        printf("Tache avec l'ID %d n'existe pas.\n", taskID);
-    }
-}
-void modifierStatut(struct Entry *entries, int numLines, int taskID, char *newStatus) {
-    if (taskID >= 0 && taskID < numLines) {
-        // Check if the task with the specified ID exists
-        strcpy(entries[taskID].status, newStatus);
-        printf("Statut de la tache %d modifie avec succes !\n", taskID);
-    } else {
-        printf("Tache avec l'ID %d n'existe pas.\n", taskID);
+void afficherTempsRestant(struct Entry *entries, int numLines) {
+    time_t current_time;
+    struct tm *tm_info;
+
+    time(&current_time);
+    tm_info = localtime(&current_time);
+
+    printf("Temps restant pour chaque tache :\n");
+
+    for (int i = 0; i < numLines; i++) {
+        struct dateLimite taskDeadline = entries[i].datel;
+
+        struct tm taskDeadlineDate = {0};
+        taskDeadlineDate.tm_year = taskDeadline.annee - 1900;
+        taskDeadlineDate.tm_mon = taskDeadline.mois - 1;
+        taskDeadlineDate.tm_mday = taskDeadline.jour;
+
+        time_t taskDeadlineTimestamp = mktime(&taskDeadlineDate);
+
+        if (taskDeadlineTimestamp != -1) {
+            time_t timeDifference = taskDeadlineTimestamp - current_time;
+
+            int daysDifference = (int)(timeDifference / (60 * 60 * 24));
+
+            printf("ID de la tache: %s\n", entries[i].id);
+            printf("Temps restant: %d jours\n", daysDifference);
+            printf("\n");
+        }
     }
 }
 
-void modifierDeadline(struct Entry *entries, int numLines, int taskID, int newAnnee, int newJour, int newmois) {
-    if (taskID >= 0 && taskID < numLines) {
-        // Check if the task with the specified ID exists
-        entries[taskID].datel.annee = newAnnee;
-        entries[taskID].datel.jour = newJour;
-        entries[taskID].datel.mois = newmois;
-        printf("Deadline de la tache %d modifiee avec succes !\n", taskID);
+void modifierDescription(struct Entry *entries, int numLines, int tacheID, char *newDescription) {
+    if (tacheID >= 0 && tacheID < numLines) {
+        strcpy(entries[tacheID].description, newDescription);
+        printf("Description de la tache %d modifiee avec succes !\n", tacheID);
     } else {
-        printf("Tache avec l'ID %d n'existe pas.\n", taskID);
+        printf("Tache avec l'ID %d n'existe pas.\n", tacheID);
+    }
+}
+void modifierStatut(struct Entry *entries, int numLines, int tacheID, char *newStatus) {
+    if (tacheID >= 0 && tacheID < numLines) {
+        strcpy(entries[tacheID].status, newStatus);
+        printf("Statut de la tache %d modifie avec succes !\n", tacheID);
+    } else {
+        printf("Tache avec l'ID %d n'existe pas.\n", tacheID);
+    }
+}
+
+void modifierDeadline(struct Entry *entries, int numLines, int tacheID, int newAnnee, int newJour, int newmois) {
+    if (tacheID >= 0 && tacheID < numLines) {
+        entries[tacheID].datel.annee = newAnnee;
+        entries[tacheID].datel.jour = newJour;
+        entries[tacheID].datel.mois = newmois;
+        printf("Deadline de la tache %d modifiee avec succes !\n", tacheID);
+    } else {
+        printf("Tache avec l'ID %d n'existe pas.\n", tacheID);
     }
 }
 
@@ -232,121 +315,107 @@ int afficheNombreTotal(int numLines){
     return numLines;
 }
 
+void supprimerTache(int tacheID, struct Entry *entries, int numLines){
+                            if (tacheID >= 0 && tacheID <= numLines){
+
+                                for(int i = tacheID; i <= numLines; i++)
+                                {
+                                    entries[i] = entries[i + 1];
+                                    (numLines--);
+                                    printf("la tache tu saisi est supprimer avec success!");
+                                }
+                        }
+}
+
+void rechercherTacheByID(int tacheID, struct Entry *entries, int numLines){
+                        printf("le titre de tache d'indentification %d : %s \n", tacheID, entries[tacheID].titre);
+                        printf("le description de tache d'indentification %d : %s \n", tacheID, entries[tacheID].description);
+                        printf("le dead Line de tache d'indentification %d : %d / %d / %d  \n", tacheID, entries[tacheID].datel.annee, entries[tacheID].datel.jour, entries[tacheID].datel.mois);
+                        printf("le statut de tache d'indentification %d : %s \n", tacheID, entries[tacheID].status);
+                        }
+
+void chargerTachesDepuisFichier(struct Entry *entries, int *numLines) {
+    FILE *file = fopen("taches.txt", "r");
+    if (file == NULL) {
+        printf("Le fichier 'taches.txt' n'existe pas. Un nouveau fichier sera cree.\n");
+        return;//
+    }
+
+    *numLines = 0; 
+
+    while (fread(&entries[*numLines], sizeof(struct Entry), 1, file)) {
+        (*numLines)++;
+    }
+
+    fclose(file);
+}
+
+void sauvegarderTachesDansFichier(struct Entry *entries, int numLines) {
+    FILE *file = fopen("taches.txt", "w");
+    if (file == NULL) {
+        printf("Erreur lors de la sauvegarde des taches dans le fichier.\n");
+        return;
+    }
+
+    for (int i = 0; i < numLines; i++) {
+        fwrite(&entries[i], sizeof(struct Entry), 1, file);
+    }
+
+    fclose(file);
+}
+
+void afficherMenu() {
+    printf("-----------------------Bonjour sur sas TODO List!---------------------------------\n");
+    printf("---------------Menu: // Veuillez Entrer Le type de process\n");
+    printf("1, L'ajout:\n2, L'affichage:\n3, Modification:\n4, Suppression:\n5, Recherche:\n6, Statistique:\n7, Exit:\n");
+}
+
 int main() {
     struct Entry entries[MAX_ENTRIES];
     int numLines = 0;
-    char id[3000];
-    char titre[50];
-    char description[100];
-    char status[20];
     struct dateLimite datel;
-    int annee;
-    int jour;
-    int mois;
-    int taskID;
-    const char *dataFileNama = "tasks.txt";
-    FILE *file = fopen(dataFileNama, "r");
-    if (file) {
-        printf("File exists: %s\n", dataFileNama);
-        if (file != NULL) {
-            char line[100];
-            while (fgets(line, sizeof(line), file) != NULL) {
-                numLines++;
-            }
-
-            rewind(file);
-            numLines = numLines / 7;
-
-            for (int i = 0; i < numLines; i++) {
-                fscanf(file, "%d %[^\n] %[^\n] %[^\n] %[^\n] %[^\n] %[^\n] %[^\n]", &id, titre, description, annee, jour, mois, status);
-                ajouterNouvelleTache(entries, &numLines, titre, description, annee, jour, mois, status);
-            }
-        }
-       
-    } 
-    fclose(file);
+    int tacheID;
+    chargerTachesDepuisFichier(entries, &numLines);
+    printf("click pour enter initializer: ");
     bool menu = true; 
     while(menu == true){
     int Pchoix, choix;
+
+    getchar();
+
     debut11:
-    printf("-----------------------Bonjour sur sas TODO List!--------------------------------- \n");
-    printf("---------------Menu:      // Veuillez Entre Le type de process \n");
-    printf("----------------1, L'ajoute: \n----------------2, L'affichage: \n----------------3, Modification: \n----------------4, Suppresion: \n----------------5, Recherche: \n----------------6, Statistique: \n----------------7, Exit: \n");
+    afficherMenu();
     scanf("%d", &Pchoix);
     printf("----------------votre choix: %d \n", Pchoix);
     if (Pchoix == 1 || Pchoix == 2 || Pchoix == 3 || Pchoix == 4 || Pchoix == 5 || Pchoix == 6 || Pchoix == 7 ) {
         switch (Pchoix) {
             case 1:
                 debut:
+                getchar();
                 printf("\n1, Ajouter une nouvelle tache \n2, Ajouter plusieurs nouvelles taches \n");
                 scanf("%d", &choix);
+                printf("\e[1;1H\e[2J");
                 switch (choix){ 
                     case 1:
-                        printf("Entrez le titre de la nouvelle tache : ");
-                        getchar();
-                        fgets(titre, sizeof(titre), stdin);
-                        titre[strcspn(titre, "\n")] = '\0';
-
-                        printf("Entrez la description de la nouvelle tache : ");
-                        fgets(description, sizeof(description), stdin);
-                        description[strcspn(description, "\n")] = '\0';
-
-                        printf("Entrez l'annee de la deadline de la tache : ");
-                        scanf("%d[0-9]{4}", &annee);
-
-                        printf("Entrez le jour de la deadline de la tache : ");
-                        scanf("%d[0-9]{2}", &jour);
-
-                        printf("Entrez le mois de la deadline de la tache : ");
-                        scanf("%d[0-9]{2}", &mois);
-
-                        printf("Entrez le statut de la tache (a realiser, en cours de realisation, finalisee) : ");
-                        getchar(); // Pour consommer le caractère de nouvelle ligne restant
-                        fgets(status, sizeof(status), stdin);
-                        status[strcspn(status, "\n")] = '\0';
-
-                        ajouterNouvelleTache(entries, &numLines, titre, description, annee, jour, mois, status);
+                        ajouterNouvelleTache(entries, &numLines);
+                        goto debut11;
                         break;
                     case 2:
                         debut0:
                         int repet;
                         printf("entre le nombre de tache tu va ajouter: ");
                         scanf("%d", &repet);
-                        getchar();
-                        for(int i = numLines; i < repet; i++){
-                        printf("Entrez le titre de la nouvelle tache : ");
-                        getchar();
-                        fgets(titre, sizeof(titre), stdin);
-                        titre[strcspn(titre, "\n")] = '\0';
-                    
-                        printf("Entrez la description de la nouvelle tache : ");
-                        getchar();
-                        fgets(description, sizeof(description), stdin);
-                        description[strcspn(description, "\n")] = '\0';
-                    
-                        printf("Entrez l'annee de la deadline de la tache : ");
-                        scanf("%d", &annee);
-                    
-                        printf("Entrez le jour de la deadline de la tache : ");
-                        scanf("%d", &jour);
-                    
-                        printf("Entrez le mois de la deadline de la tache : ");
-                        scanf("%d", &mois);
-                    
-                        printf("Entrez le statut de la tache (a realiser, en cours de realisation, finalisee ) : ");
-                        getchar(); 
-                        fgets(status, sizeof(status), stdin);
-                        status[strcspn(status, "\n")] = '\0';
-                    
-                        printf("Entrez le nombre de taches a ajouter : ");
-                        scanf("%d", &repet);
-                        ajouterNouvelleTache(entries, &numLines, titre, description, annee, jour, mois, status);
-                        }
+                        int c;
+                        while ((c = getchar()) != '\n' && c != EOF); // Clear the input buffer
+
+                        ajouterMultipleTache(repet, entries, &numLines);
+
+                        goto debut11;
                         break;
                     default:
                         goto debut0;
                         break;
-                
+                goto debut11;
                 break;
                 }
             case 2:
@@ -356,18 +425,22 @@ int main() {
                 switch(choix) {
                     case 1:
                         afficheTachesTrieesParTitre(entries, numLines);
+
                         break;
                     case 2:
                         afficheTachesTrieesParDeadline(entries, numLines);
+
                         break;
                     case 3:
                         afficherTachesProches(entries, numLines);
+
                         break;
                     default:
                         printf("choix invalide!!");
                     goto debut1;
                     break;
                 }
+                goto debut11;
                 break;
             case 3:
                 debut2:
@@ -375,39 +448,41 @@ int main() {
                 scanf("%d", &choix);
                 switch(choix) {
                     case 1:
-                        int taskID;
+                        tacheID;
                         char newDescription[100];
 
                         printf("Entrez l'ID de la tache que vous souhaitez modifier : ");
-                        scanf("%d", &taskID);
+                        scanf("%d", &tacheID);
 
                         printf("Entrez la nouvelle description de la tache : ");
                         getchar();
                         fgets(newDescription, sizeof(newDescription), stdin);
                         newDescription[strcspn(newDescription, "\n")] = '\0'; 
 
-                        modifierDescription(entries, numLines, taskID, newDescription);
+                        modifierDescription(entries, numLines, tacheID, newDescription);
+                        
                         break;
 
                     case 2:
                         char newStatus[20];
 
                         printf("Entrez l'ID de la tache que vous souhaitez modifier : ");
-                        scanf("%d", &taskID);
+                        scanf("%d", &tacheID);
 
                         printf("Entrez le nouveau statut de la tache : ");
                         getchar();
                         fgets(newStatus, sizeof(newStatus), stdin);
-                        newStatus[strcspn(newStatus, "\n")] = '\0'; // Remove trailing newline character
+                        newStatus[strcspn(newStatus, "\n")] = '\0';
 
-                        modifierStatut(entries, numLines, taskID, newStatus);
+                        modifierStatut(entries, numLines, tacheID, newStatus);
+                        goto debut11;
                         break;
 
                     case 3:
                         int newAnnee, newJour, newmois;
 
                         printf("Entrez l'ID de la tache dont vous souhaitez modifier la deadline : ");
-                        scanf("%d", &taskID);
+                        scanf("%d", &tacheID);
 
                         printf("Entrez la nouvelle annee de la deadline : ");
                         scanf("%d", &newAnnee);
@@ -418,13 +493,15 @@ int main() {
                         printf("Entrez le nouveau mois de la deadline : ");
                         scanf("%d", &newmois);
 
-                        modifierDeadline(entries, numLines, taskID, newAnnee, newJour, newmois);
+                        modifierDeadline(entries, numLines, tacheID, newAnnee, newJour, newmois);
+
                         break;
                     default:
                         printf("choix invalide!!");
                     goto debut2;
                     break;
                 }
+                goto debut11;
                 break;
             case 4:
                 debut3:
@@ -434,26 +511,23 @@ int main() {
                     case 1:
 
                         printf("Entrez l'ID de la tache que vous souhaitez modifier : ");
-                        scanf("%d", &taskID);
-                        if (taskID >= 0 && taskID <= numLines){
-
-                            for(int i = taskID; i <= numLines; i++)
-                            {
-                                entries[i] = entries[i + 1];
-                                (numLines--);
-                                printf("la tache tu saisi est supprimer avec success!");
-                            }
+                        scanf("%d", &tacheID);
+                        if(tacheID > 0 && tacheID <= numLines){
+                        supprimerTache(tacheID, entries, numLines);
+                            goto debut11;
                             break;
                         }
                         else{
                             printf("la tache tu saisi n'existe pas!");
                         }
+                        goto debut11;
                         break;
                     default:
                         printf("choix invalide!!");
                     goto debut3;
                     break;
                 }
+                goto debut11;
                 break;
             case 5:
                 debut4:
@@ -463,89 +537,92 @@ int main() {
                     case 1:
                         int Tid;
                         printf("donnez le nombre de tache: ");
-                        scanf("%d", &Tid);
-                        printf("le titre de tache d'indentification %d : %s \n", Tid, entries[Tid].titre);
-                        printf("le description de tache d'indentification %d : %s \n", Tid, entries[Tid].description);
-                        printf("le dead Line de tache d'indentification %d : %d / %d / %d  \n", Tid, entries[Tid].datel.annee, entries[Tid].datel.jour, entries[Tid].datel.mois);
-                        printf("le statut de tache d'indentification %d : %s \n", Tid, entries[Tid].status);
-                        break;
+                        scanf("%d", &tacheID);
+                        if(tacheID > 0 && tacheID <= numLines){
+                        rechercherTacheByID(tacheID, entries, numLines);
+                            goto debut11;
+                            break;
+                        }
+                        else{
+                            printf("la tache tu saisi n'existe pas!");
+                        }
+                        goto debut11;
+                            break;
                     case 2:
                         char Ttitre[50];
                         char check[10];
+                        getchar();
                         printf("donnez le titre de votre tache: ");
                         scanf("%[^\n]", Ttitre);
                         for(int i = 0; i < numLines; i++){
                             if(strcmp(entries[i].titre, Ttitre) == 0){
-                                printf("le titre de votre tache est: ", entries[i].titre);
-                                printf("le description de votre tache est: ", entries[i].description);
-                                printf("le status de votre tache est: ", entries[i].status);
-                                printf("le deadline de votre tache est: %d / %d / %d", entries[i].datel.annee, entries[i].datel.jour, entries[i].datel.mois);
+                                printf("le titre de tache d'indentification %d : %s \n", Tid, entries[Tid].titre);
+                                printf("le description de tache d'indentification %d : %s \n", Tid, entries[Tid].description);
+                                printf("le dead Line de tache d'indentification %d : %d / %d / %d  \n", Tid, entries[Tid].datel.annee, entries[Tid].datel.jour, entries[Tid].datel.mois);
+                                printf("le statut de tache d'indentification %d : %s \n", Tid, entries[Tid].status);
                             }
                         }
+                        goto debut11;
                         break;
                     default:
                         printf("choix invalide!!");
                         goto debut4;
                         break;
                 }
+                goto debut11;
                 break;
             case 6:
                 debut5:
-                printf("1, Afficher le nombre total des taches \n2, Afficher le nombre de taches complètes et incomplètes \n3, Afficher le nombre de jours restants jusqu'au delai de chaque tache \n");
+                printf("1, Afficher le nombre total des taches \n2, Afficher le nombre de taches completes et incompletes \n3, Afficher le nombre de jours restants jusqu'au delai de chaque tache \n");
                 scanf("%d", &choix);
                 switch (choix) {
                     case 1:
                         int totalTaches = afficheNombreTotal(numLines);
-                        printf("le total de tache est: %d", totalTaches);
+                        printf("le total nombre de taches est: %d \n", totalTaches);
+                        goto debut11;
                         break;
                     case 2:
-                        int count;
+                        int count = 0;
                         for(int i = 0; i < numLines; i++){
-                            if(strcmp(entries[i].status, "a realiser") == 0 || strcmp(entries[i].status, "en cours de realisation") == 0){
+                            if(strcmp(entries[i].status, "finalisee") != 0){
                                 count++;
                             }
                         }
-                        printf("le nombre de tache incompletes est: %d", &count);
-                        printf("le nombre de tache completes est: %d", &numLines - &count);
+                        printf("le nombre de tache incompletes est: %d\n", count);
+                        printf("le nombre de tache completes est: %d\n", numLines - count);
+                        goto debut11;
                         break;
                     case 3:
-                        
+                        afficherTempsRestant(entries, numLines);
+                        goto debut11;
                         break;
                     default:
                         printf("choix invalide!!");
                         goto debut5;
                         break;
                 }
+                goto debut11;
                 break;
             case 7:
-                if(numLines > 0){
-                    FILE *file = fopen(dataFileNama, "w");
-                    if (file == NULL) {
-                    perror("Error opening file for writing");
-                    exit(1); 
-                    }
-                    for(int i = 0; i < numLines; i++){
-                        fprintf(file, "%s\n", entries[i].datel);
-                        fprintf(file, "%s\n", entries[i].description);
-                        fprintf(file, "%s\n", entries[i].id);
-                        fprintf(file, "%s\n", entries[i].status);
-                        fprintf(file, "%s\n", entries[i].titre);
-                    }
-                    fclose(file);
+            printf("confirme votre choix pour exit le programme entrez 1. ou non entrez 0: ");
+            scanf("%d", &choix);
+            switch(choix){
+                case 1:
+                    sauvegarderTachesDansFichier(entries, numLines);
+                    printf("au revoire \n");
+                    menu = false;
                     exit(0);
                     break;
                 }
                 break;
+                case 0:
+                    goto debut11;
+                    break;
+            }
             
-        default:
-            printf("Entre Un choix valide!! \n");
-            goto debut11;
+        
 }
 
     }
-    }
-        return 0;
+    return 0;
 }
-
-
-
